@@ -73,7 +73,6 @@
     
     };
 
-
     class Paddle
     {
     protected:
@@ -193,17 +192,13 @@ while (!WindowShouldClose())
 
     if (!GameOver)
     {
-        // --------------------
         // Update game objects
-        // --------------------
         ball.Updated();
         LeftPaddle.Updated(false);
         RightPaddle.Updated(true);
 
         
-        // --------------------
         // Collisions
-        // --------------------
         if (CheckCollisionCircleRec(Vector2{ball.PosX, ball.PosY}, ball.Radius,
             Rectangle{LeftPaddle.PosX, LeftPaddle.PosY, LeftPaddle.PaddleWidth, LeftPaddle.PaddleHeight}))
         {
@@ -217,9 +212,7 @@ while (!WindowShouldClose())
 
 
 
-        // --------------------
         // Drawing game objects
-        // --------------------
         DrawRectangle(0, 0, ScreenWidth/2, ScreenHeight, Background_Mid);
         DrawCircle(ScreenWidth/2, ScreenHeight/2, 120, Background_Bottom);
         DrawLine(ScreenWidth/2, 0, ScreenWidth/2, ScreenHeight, WHITE);
@@ -232,9 +225,9 @@ while (!WindowShouldClose())
 
 
 
-        // --------------------
+     
         // Check Win Condition
-        // --------------------
+    
         if (LeftPaddleScore >= WinningScore || RightPaddleScore >= WinningScore)
         {
             GameOver = true;
@@ -242,9 +235,9 @@ while (!WindowShouldClose())
     }
     else
     {
-        // --------------------
+     
         // Game Over Screen
-        // --------------------        
+    
         if(LeftPaddleScore>=WinningScore)
         {
            DrawText("LEFT PLAYER WINS!", ScreenWidth/2 - 250, ScreenHeight/2 - 50, 50, Score_Text);

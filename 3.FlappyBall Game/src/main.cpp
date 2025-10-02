@@ -105,7 +105,6 @@ int main(void) {
         BeginDrawing();
         ClearBackground(SKYBLUE);
 
-        
         DrawRectangle(0, SCREEN_H - GROUND_H, SCREEN_W, GROUND_H, DARKGREEN);
         for (int i=0; i<PIPE_COUNT; i++) {
             DrawRectangle(pipes[i].x, 0, pipes[i].width,

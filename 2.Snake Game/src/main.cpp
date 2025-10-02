@@ -1,87 +1,100 @@
-#include <raylib.h>
-#include <deque>
-#include <cstdlib>
-#include <ctime>
+/****** Steps to Make a Snake Game *********/
+//Step 1: Setup the Window
+//Step 2: Create the Snake
+//Step 3: Create the Food
+//Step 4: Move the Snake (direction control)
+//Step 5: Grow the Snake when eating food
+//Step 6: Handle Collisions (wall & self)
+//Step 7: Add Scoring System
+//Step 8: Win/Loss Condition
+//Step 9: Game Loop (update & render)
 
-const int screenWidth = 800;
-const int screenHeight = 600;
-const int cellSize = 20;
-const int cols = screenWidth / cellSize;
-const int rows = screenHeight / cellSize;
+#include "raylib.h"
+#include <stdlib.h>
+#include <time.h>
 
-struct Segment {
-    int x, y;
-};
+#define CELL 20            //macro  "repacle CELL with 20 vaule "
+#define COLS 40            //macro
+#define ROWS 30            //macro 
 
-std::deque<Segment> snake;
-Segment food;
-int dirX = 1, dirY = 0;
-bool gameOver = false;
-
-// Reset game 
-void ResetGame() {
-    snake.clear();
-    snake.push_back({cols / 2, rows / 2});
-    dirX = 1; dirY = 0;
-    food = { rand() % cols, rand() % rows };
-    gameOver = false;
-}
-
-
-void UpdateSnake() {
-    
-    Segment newHead = { snake.front().x + dirX, snake.front().y + dirY };
-    if (newHead.x < 0) newHead.x = cols - 1;
-    if (newHead.x >= cols) newHead.x = 0;
-    if (newHead.y < 0) newHead.y = rows - 1;
-    if (newHead.y >= rows) newHead.y = 0;
-    for (auto &seg : snake) {
-        if (seg.x == newHead.x && seg.y == newHead.y) {
-            gameOver = true;
-            return;
-        }
-    }
-
-    snake.push_front(newHead);
-    if (newHead.x == food.x && newHead.y == food.y) {
-        food = { rand() % cols, rand() % rows }; 
-    } else {
-        snake.pop_back(); 
-    }
-}
-
+typedef struct { int x, y; } Cell;
 
 int main() {
-    InitWindow(screenWidth, screenHeight, "Snake Game - Raylib");
-    SetTargetFPS(10); 
+    InitWindow(COLS*CELL, ROWS*CELL, "Simple Snake with Score + Retry");
+    SetTargetFPS(10);
+    srand(time(NULL));
 
-    srand(time(0));
-    ResetGame();
+    // Snake  Varabiles setup
+    Cell snake[100];
+    int len;
+    int dirX, dirY;
+    Cell food;
+    int score;
+    bool gameOver;
+
+    //reset the game
+    auto reset = [&](){
+        len = 3;
+        snake[0] = (Cell){20, 15};
+        snake[1] = (Cell){19, 15};
+        snake[2] = (Cell){18, 15};
+        dirX = 1; dirY = 0;
+        food = (Cell){ rand()%COLS, rand()%ROWS };
+        score = 0;
+        gameOver = false;
+    };
+
+    reset();
 
     while (!WindowShouldClose()) {
-        // Controls
-        if (IsKeyDown(KEY_W) && dirY != 1) { dirX = 0; dirY = -1; }
-        if (IsKeyDown(KEY_S) && dirY != -1) { dirX = 0; dirY = 1; }
-        if (IsKeyDown(KEY_A) && dirX != 1) { dirX = -1; dirY = 0; }
-        if (IsKeyDown(KEY_D) && dirX != -1) { dirX = 1; dirY = 0; }
+        // Input
+        if (IsKeyPressed(KEY_UP) && dirY==0)   { dirX=0; dirY=-1; }
+        if (IsKeyPressed(KEY_DOWN) && dirY==0) { dirX=0; dirY=1; }
+        if (IsKeyPressed(KEY_LEFT) && dirX==0) { dirX=-1; dirY=0; }
+        if (IsKeyPressed(KEY_RIGHT) && dirX==0){ dirX=1; dirY=0; }
+
+        if (gameOver && IsKeyPressed(KEY_ENTER)) {
+            reset();
+        }
 
         if (!gameOver) {
-            UpdateSnake();
-        } else if (IsKeyPressed(KEY_ENTER)) {
-            ResetGame();
+            // Move snake
+            for (int i=len; i>0; i--) snake[i]=snake[i-1];
+            snake[0].x += dirX;
+            snake[0].y += dirY;
+
+            // Check wall collision
+            if (snake[0].x<0 || snake[0].x>=COLS || snake[0].y<0 || snake[0].y>=ROWS) gameOver = true;
+
+            // Check self collision
+            for (int i=1;i<len;i++) 
+                if (snake[0].x==snake[i].x && snake[0].y==snake[i].y) gameOver=true;
+
+            // Eat food
+            if (!gameOver && snake[0].x==food.x && snake[0].y==food.y) {
+                len++;
+                score += 10;
+                food.x = rand()%COLS;
+                food.y = rand()%ROWS;
+            }
         }
 
+        // Draw
         BeginDrawing();
-        ClearBackground(BLACK);
-        DrawRectangle(food.x * cellSize, food.y * cellSize, cellSize, cellSize, RED);
-        for (auto &seg : snake) {
-            DrawRectangle(seg.x * cellSize, seg.y * cellSize, cellSize, cellSize, GREEN);
+        ClearBackground(RAYWHITE);
+        DrawRectangle(food.x*CELL, food.y*CELL, CELL, CELL, RED);
+        DrawText(TextFormat("Score: %d", score), 10, 10, 20, BLACK);
+        for (int i=0; i<len; i++)
+        {
+            DrawRectangle(snake[i].x*CELL, snake[i].y*CELL, CELL, CELL, GREEN);
         }
+        // Game over text
         if (gameOver) {
-            DrawText("GAME OVER! Press Enter to Restart", screenWidth/2 - 160, screenHeight/2, 20, WHITE);
+            DrawText("GAME OVER", 200, 200, 40, MAROON);
+            DrawText("Press ENTER to Retry", 200, 250, 20, DARKGRAY);
         }
-            EndDrawing();
-        }
+        EndDrawing();
+    }
 
     CloseWindow();
     return 0;
